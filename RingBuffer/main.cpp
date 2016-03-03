@@ -7,9 +7,30 @@
 //
 
 #include <iostream>
+#include "rbuf.h"
 
+using namespace std;
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
+
+    Gmb::Rbuf<double> rbuf(128);
+    
+    double *head = rbuf.head();
+    double *tail;
+    size_t size = rbuf.size();
+    int i;
+    
+    for (i = 0; i < size; ++i) {
+        *head++ = (double)i;
+
+    }
+    
+    rbuf.produce(i);
+    
+    tail = rbuf.tail();
+    for (i = 0; i < size * 2; ++i) {
+        cout << *tail++ << endl;
+    }
+    
+    
     return 0;
 }

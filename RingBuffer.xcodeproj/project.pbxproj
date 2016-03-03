@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		EAEC77451C879FC2001DD1FC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAEC77441C879FC2001DD1FC /* main.cpp */; };
-		EAEC774D1C87A074001DD1FC /* rbuf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EAEC774B1C87A074001DD1FC /* rbuf.cpp */; };
+		EAEC774D1C87A074001DD1FC /* rbuf.hpp in Sources */ = {isa = PBXBuildFile; fileRef = EAEC774B1C87A074001DD1FC /* rbuf.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,7 +26,7 @@
 /* Begin PBXFileReference section */
 		EAEC77411C879FC2001DD1FC /* RingBuffer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RingBuffer; sourceTree = BUILT_PRODUCTS_DIR; };
 		EAEC77441C879FC2001DD1FC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		EAEC774B1C87A074001DD1FC /* rbuf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rbuf.cpp; sourceTree = "<group>"; };
+		EAEC774B1C87A074001DD1FC /* rbuf.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = rbuf.hpp; sourceTree = "<group>"; };
 		EAEC774C1C87A074001DD1FC /* rbuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rbuf.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -62,7 +62,7 @@
 			children = (
 				EAEC77441C879FC2001DD1FC /* main.cpp */,
 				EAEC774C1C87A074001DD1FC /* rbuf.h */,
-				EAEC774B1C87A074001DD1FC /* rbuf.cpp */,
+				EAEC774B1C87A074001DD1FC /* rbuf.hpp */,
 			);
 			path = RingBuffer;
 			sourceTree = "<group>";
@@ -123,7 +123,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EAEC774D1C87A074001DD1FC /* rbuf.cpp in Sources */,
+				EAEC774D1C87A074001DD1FC /* rbuf.hpp in Sources */,
 				EAEC77451C879FC2001DD1FC /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
