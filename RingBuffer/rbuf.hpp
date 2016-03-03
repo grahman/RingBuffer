@@ -110,6 +110,14 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
             throw std::exception();
     }
+  /* Try to minimize security risks by unlinking the "file" in /dev/shm, although this 
+   * entire constructor has been one long race condition for Linux... */
+    if(shm_unlink("/rbuf") < 0) {
+#ifdef DEBUG
+        std::cerr << "shm_unlink() failed with error " << strerror(errno) << std::endl;
+#endif
+        throw std::exception();
+  }
     
 #endif /* Linux */
     
@@ -189,16 +197,6 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     _head = addr;
     _tail = addr;
     arr = (double *)addr;   /* For [] operator */
-#ifdef DEBUG
-  std::cout << "head is " << std::hex << _head << std::endl;
-#endif
-  if(shm_unlink("/rbuf") < 0) {
-#ifdef DEBUG
-        std::cerr << "shm_unlink() failed with error " << strerror(errno) << std::endl;
-#endif
-        throw std::exception();
-  }
-  
 }
 
 template <typename t>
