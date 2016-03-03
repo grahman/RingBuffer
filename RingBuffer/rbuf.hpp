@@ -243,6 +243,14 @@ Gmb::Rbuf<t>::~Rbuf()
 #endif
 #ifdef __linux__
     /* TODO: linux dealloc implementation */
+    if (munmap(addr, _size * 2) < 0) {
+#ifdef DEBUG
+    std::cerr << "munmap() failed for addr " << std::hex << (unsigned long)addr;
+    std::cerr << " and length " << std::dec << _size * 2 << " " <<  strerror(errno) <<  std::endl;
+#endif
+            throw std::exception();
+    }
+
 #endif
 }
 
