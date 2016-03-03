@@ -17,12 +17,14 @@ int main(int argc, const char * argv[]) {
     double *head = rbuf.head();
     double *tail;
     size_t size = rbuf.size();
-    int i;
-    
+    unsigned long i;
+   
     for (i = 0; i < size; ++i) {
         *head++ = (double)i;
-
     }
+#ifdef DEBUG
+        cout << "made it past first for loop" << endl;
+#endif
     
     rbuf.produce(i);
     
