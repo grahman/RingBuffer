@@ -55,6 +55,9 @@ int main(int argc, const char * argv[]) {
     
     tail = rbuf.tail();
     tail2 = rbuf2.tail();
+    
+    /* Loop through 2x as many elements as "allowed" to prove that
+     the shared memory trick worked */
     for (i = 0; i < size * 2; ++i) {
         cout << *tail++ << endl;
         cout << *tail2++ << endl;

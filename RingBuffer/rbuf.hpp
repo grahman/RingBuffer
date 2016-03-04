@@ -10,24 +10,26 @@
 #include "rbuf.h"
 #include <exception>
 #include <stdexcept>
-#include <unistd.h>
 #include <cstdlib>
+#ifdef __linux__
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <cerrno>
+#endif
 #ifdef __APPLE__
 #include <mach/vm_map.h>
 #include <mach/mach.h>
 #endif
 #ifdef DEBUG
 #include <string.h>
-#include <cerrno>
 #include <iostream>
 #endif
 
 #ifdef __linux__
-static const char letters[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' , 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+static const char alphanum[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' , 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
 static std::string random_string(size_t length)
 {
@@ -36,7 +38,7 @@ static std::string random_string(size_t length)
     
     str.push_back('/');
     for (i = 1; i < length; ++i) {
-        str.push_back(letters[rand() % 62]);
+        str.push_back(alphanum[rand() % 62]);
     }
     
     return str;
@@ -100,6 +102,7 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
             throw std::exception();
     }
+    /* Try to reserve a contiguous vm range in our va space */
     addr = (char *)mmap(NULL, alloc_size * 2, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (!addr || addr == MAP_FAILED) {
 #ifdef DEBUG
@@ -107,6 +110,7 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
             throw std::exception();
     }
+    /* Now that we know the starting address, deallocate it */
     if (munmap(addr, alloc_size * 2) < 0) {
 #ifdef DEBUG
     std::cerr << "munmap() failed for addr " << std::hex << (unsigned long)addr;
@@ -114,7 +118,7 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
             throw std::exception();
     }
-    /* Now allocate the real buffers */
+    /* Now allocate the real shared memory buffers */
     origAddress = addr;
     addr = (char *)mmap(origAddress, alloc_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FILE | MAP_FIXED, shm, 0);
     if (!addr || addr == MAP_FAILED) {
@@ -129,6 +133,8 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
             throw std::exception();
     }
+    
+    /* Remap the second half of the contiguous vm region to same shared memory as first half */
     remapStart = addr + alloc_size;
     origAddress = remapStart;
     remapStart = (char *)mmap(remapStart, alloc_size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FILE | MAP_FIXED, shm, 0);
@@ -291,7 +297,6 @@ Gmb::Rbuf<t>::~Rbuf()
    
 #endif
 #ifdef __linux__
-    /* TODO: linux dealloc implementation */
     if (munmap(addr, _size * 2) < 0) {
 #ifdef DEBUG
     std::cerr << "munmap() failed for addr " << std::hex << (unsigned long)addr;
