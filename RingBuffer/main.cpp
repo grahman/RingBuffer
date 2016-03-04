@@ -61,7 +61,7 @@ int main(int argc, const char * argv[]) {
     }
 
     rbuf.consume(i / 2);    /*  Move 'tail' forward i elements */
-    rbuf2.consume(i / 2);
+    rbuf2.consumeZero(i / 2);
     
     /* Test out the [] operator (does not depend on 'head' or 'tail') */
     for (i = 0; i < size * 2; ++i) {

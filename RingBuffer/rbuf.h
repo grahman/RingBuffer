@@ -20,6 +20,7 @@ namespace Gmb {
         t *head() const {return (t *)_head;};
         t *tail() const {return (t *)_tail;};
         void consume(size_t elements);  /* Moves tail forward by specified number of elements */
+        void consumeZero(size_t elements);  /* Moves tail forward by specified number of elements and zeroes them out */
         void produce(size_t elements);  /* Moves head forward by specified number of elements */
         size_t size() const {return _n;};       /* Number of elements ring buffer can accomodate */
         size_t freeSpace() const {return (_size - _fillcount) / sizeof(t);};

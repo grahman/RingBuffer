@@ -250,6 +250,22 @@ void Gmb::Rbuf<t>::consume(size_t elements)
 }
 
 template <typename t>
+void Gmb::Rbuf<t>::consumeZero(size_t elements)
+{
+    if (elements * sizeof(t) > _fillcount) {
+        throw std::invalid_argument("Gmb::Rbuf::consume() - elements > fillcount");
+    }
+    size_t bytesConsumed = elements * sizeof(t);
+    _fillcount -= bytesConsumed;
+    memset(_tail, 0, bytesConsumed);
+    
+    if (_tail + bytesConsumed > addr + _size)
+        _tail = addr + ((_tail - addr + bytesConsumed) % _size);
+    else
+        _tail += bytesConsumed;
+}
+
+template <typename t>
 void Gmb::Rbuf<t>::produce(size_t elements)
 {
     if (elements * sizeof(t) > _size - _fillcount) {
