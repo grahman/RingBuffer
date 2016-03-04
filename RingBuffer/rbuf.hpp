@@ -84,7 +84,7 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     
 #ifdef __linux__
     std::string shm_name = random_string(64);
-    int shm = shm_open(shm_name.c_str(), O_RDWR | O_CREAT, 0777);
+    int shm = shm_open(shm_name.c_str(), O_RDWR | O_CREAT, 0700);
     char *origAddress;
     char *remapStart;
     if (shm < 0) {
