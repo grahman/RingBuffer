@@ -7,11 +7,17 @@
 //
 
 #include <iostream>
+#ifdef __linux__
+#include <ctime>
+#endif
 #include "rbuf.h"
 
 using namespace std;
 int main(int argc, const char * argv[]) {
 
+#ifdef __linux__
+    srand(time(NULL));  /* On linux, seed random number generator before calling rbuf constructors */
+#endif
     Gmb::Rbuf<double> rbuf(128);
     Gmb::Rbuf<double> rbuf2(128);
     double *head = rbuf.head();
