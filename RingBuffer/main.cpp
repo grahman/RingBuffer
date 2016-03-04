@@ -87,17 +87,18 @@ int main(int argc, const char * argv[]) {
     
     /* Test out the [] operator (does not depend on 'head' or 'tail') */
     int j;
-    for (j = 0; j > size * -1; --j) {
-        if (rbuf[j] != rbuf[size + j - 1]) {
-            cerr << "main(): Error, rbuf[" << j << "] != rbuf[" << size + j - 1 << "]" << endl;
+    for (j = 0; j > (int)(size) * -1; --j) {
+        if (rbuf[j] != rbuf[(int)size + j]) {
+            cerr << "main(): Error, rbuf[" << j << "] != rbuf[" << size + j << "]" << endl;
             return 1;
         }
-        if (rbuf2[j] != rbuf2[size + j - 1]) {
-            cerr << "main(): Error, rbuf2[" << j << "] != rbuf2[" << size + j - 1 << "]" << endl;
+        if (rbuf2[j] != rbuf2[(int)size + j]) {
+            cerr << "main(): Error, rbuf2[" << j << "] != rbuf2[" << size + j << "]" << endl;
             return 1;
         }
     }
 
+    cout << "main(): Gmb::Rbuf<t>::operator[] negative indices test: Passed!" << endl;
     /* Now test error handling functionality */
     try {
             Gmb::Rbuf<BadStruct> badBuf(128);
