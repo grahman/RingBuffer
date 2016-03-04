@@ -12,6 +12,14 @@
 #include <cstdlib>
 
 namespace Gmb {
+    /* Note: If this is compiled on Linux, it is extremely important to seed
+     * the random number generator with srand() prior to calling the constructors.
+     * If this is not done, the likelihood of one process that uses this class 
+     * corrupting the ring buffers of another process that uses this class 
+     * becomes MUCH more likely. This is due to the fact that Linux uses the filesystem
+     * abstraction to manage shared memory, so "filenames" must be as random as possible.
+     * If the rnd number generator is seeded, the temporary filename will be one out
+     * of 64^62 possibilities. */
     template <class t>
     class Rbuf {
     public:

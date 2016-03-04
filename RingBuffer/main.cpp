@@ -30,7 +30,7 @@ typedef struct GoodStruct {
 int main(int argc, const char * argv[]) {
 
 #ifdef __linux__
-    srand(time(NULL));  /* On linux, seed random number generator before calling rbuf constructors */
+   srand(time(NULL));  /* On linux, seed random number generator before calling rbuf constructors */
 #endif
     Gmb::Rbuf<double> rbuf(128);
     Gmb::Rbuf<double> rbuf2(128);

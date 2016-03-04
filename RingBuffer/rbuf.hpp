@@ -11,6 +11,7 @@
 #include <exception>
 #include <stdexcept>
 #include <cstdlib>
+#include <string.h>
 #ifdef __linux__
 #include <unistd.h>
 #include <sys/stat.h>
@@ -24,11 +25,11 @@
 #include <mach/mach.h>
 #endif
 #ifdef DEBUG
-#include <string.h>
 #include <iostream>
 #endif
 
 #ifdef __linux__
+#define MAX_ATTEMPTS 3  /* For shared memory loop in constructor */
 static const char alphanum[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' , 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
 
 static std::string random_string(size_t length)
@@ -43,6 +44,13 @@ static std::string random_string(size_t length)
     
     return str;
 }
+
+static inline bool file_exists(const std::string &fname)
+{
+    struct stat buffer;
+    return (stat(fname.c_str(), &buffer) == 0);
+}
+
 #endif /* Linux */
 static inline bool isPowerOf2(size_t x)
 {
@@ -85,7 +93,29 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     alloc_size = ((numPages + ((remainder) ? 1 : 0)) * pageSize);
     
 #ifdef __linux__
-    std::string shm_name = random_string(64);
+    int attempts = 0;
+    bool success = false;
+    std::string shm_name;
+     
+    while (attempts < MAX_ATTEMPTS) {
+        shm_name = random_string(64);
+        /* Even though there is a TOCTOU attack possible with the way
+         * we are checking to see if shm_name exists, it is good enough 
+         * for the purpose of preventing ourselves from corrupting the buffers
+         * of another process using this ring buffer library */
+        if (file_exists("/dev/shm/" + shm_name)) {
+            ++attempts;
+            continue;
+        }
+        success = true;
+        break;
+    }
+    if (!success) {
+#ifdef DEBUG
+        std::cerr << "Gmb::Rbuf::Rbuf() -- Error: could not create unique shared memory file, make sure you've seeded the random number generator (i.e. srand(time(NULL))" << std::endl;
+#endif
+        throw std::exception();
+    }
     int shm = shm_open(shm_name.c_str(), O_RDWR | O_CREAT, 0700);
     char *origAddress;
     char *remapStart;

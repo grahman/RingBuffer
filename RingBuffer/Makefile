@@ -1,6 +1,11 @@
 CC = g++
-CXXFLAGS = -g -Wall -DDEBUG
 LDFLAGS = -lrt
+
+build: clean main
+
+debug: CXXFLAGS = -g -Wall -DDEBUG
+debug: clean main
+
 main: main.o
 
 main.o: main.cpp rbuf.h rbuf.hpp
