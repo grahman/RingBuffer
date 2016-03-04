@@ -26,6 +26,23 @@
 #include <iostream>
 #endif
 
+#ifdef __linux__
+static const char letters[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i' , 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+static std::string random_string(size_t length)
+{
+    int i;
+    std::string str;
+    
+    str.push_back('/');
+    for (i = 1; i < length; ++i) {
+        str.push_back(letters[rand() % 62]);
+    }
+    
+    return str;
+}
+#endif
+
 template <typename t>
 Gmb::Rbuf<t>::Rbuf(size_t elements)
 {
@@ -50,7 +67,8 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
 #endif
     
 #ifdef __linux__
-    int shm = shm_open("/rbuf", O_RDWR | O_CREAT, 0777);
+    std::string shm_name = random_string(64);
+    int shm = shm_open(shm_name.c_str(), O_RDWR | O_CREAT, 0777);
     char *origAddress;
     char *remapStart;
     if (shm < 0) {
@@ -112,7 +130,7 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     }
   /* Try to minimize security risks by unlinking the "file" in /dev/shm, although this 
    * entire constructor has been one long race condition for Linux... */
-    if(shm_unlink("/rbuf") < 0) {
+    if(shm_unlink(shm_name.c_str()) < 0) {
 #ifdef DEBUG
         std::cerr << "shm_unlink() failed with error " << strerror(errno) << std::endl;
 #endif
@@ -129,7 +147,6 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     vm_address_t bufferAddress;
     vm_address_t origAddress;
     vm_address_t remapStart;
-    vm_prot_t cur_prot, max_prot;
     mach_port_t memoryEntry;
 
     result = vm_allocate(mach_task_self(),
