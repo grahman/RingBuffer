@@ -58,17 +58,44 @@ int main(int argc, const char * argv[]) {
     
     /* Loop through 2x as many elements as "allowed" to prove that
      the shared memory trick worked */
-    for (i = 0; i < size * 2; ++i) {
-        cout << *tail++ << endl;
-        cout << *tail2++ << endl;
+    for (i = 0; i < size; ++i) {
+        if (tail[i] != tail[size + i]) {
+            cerr << "main(): Error -- second half of virtual memory region is not a mirror image of first half(1)." << endl;
+            return 1;
+        }
+        if (tail2[i] != tail2[size + i]) {
+            cerr << "main(): Error -- second half of virtual memory region is not a mirror image of first half(1)." << endl;
+            return 1;
+        }
     }
 
-    rbuf.consume(i / 2);    /*  Move 'tail' forward i elements */
-    rbuf2.consumeZero(i / 2);
+    cout << "main(): Virtual memory remap test: Passed!" << endl;
+
+    rbuf.consume(i);        /*  Move 'tail' forward i elements */
+    rbuf2.consumeZero(i);   /*  Same but also zero out the elements we just read for rbuf2 */
+
+    tail2 = rbuf2.tail();
+    double *iter = &rbuf2[0];
+    while (iter != tail2) {
+        if (*iter++) {
+            cerr << "Main(): Gmb::Rbuf<t>::consumeZero test: Failed!" << endl;
+            return 1;
+        }
+    }
+
+    cout << "main(): Gmb::Rbuf<t>::consumeZero test: Passed!" << endl;
     
     /* Test out the [] operator (does not depend on 'head' or 'tail') */
-    for (i = 0; i < size * 2; ++i) {
-            cout << rbuf[i] << endl; 
+    int j;
+    for (j = 0; j > size * -1; --j) {
+        if (rbuf[j] != rbuf[size + j - 1]) {
+            cerr << "main(): Error, rbuf[" << j << "] != rbuf[" << size + j - 1 << "]" << endl;
+            return 1;
+        }
+        if (rbuf2[j] != rbuf2[size + j - 1]) {
+            cerr << "main(): Error, rbuf2[" << j << "] != rbuf2[" << size + j - 1 << "]" << endl;
+            return 1;
+        }
     }
 
     /* Now test error handling functionality */
@@ -86,5 +113,7 @@ int main(int argc, const char * argv[]) {
     }
 
     cout << "Good, ring buffer allocation succeeded for struct whose size is a power of 2" << endl;
+    cout << "----------------------------------" << endl;
+    cout << "All tests passed!" << endl;
     return 0;
 }
