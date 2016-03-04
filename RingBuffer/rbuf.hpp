@@ -41,8 +41,20 @@ static std::string random_string(size_t length)
     
     return str;
 }
-#endif
-
+#endif /* Linux */
+static inline bool isPowerOf2(size_t x)
+{
+    size_t i;
+    int bitset = 0;
+    
+    for (i = 0; i < sizeof(x) * 4; ++i) {
+        if ((x & (0x1 << i) && bitset))
+            return false;
+        else if ((x & (0x1 << i) && !bitset))
+            bitset = 1;
+    }
+    return true;
+}
 template <typename t>
 Gmb::Rbuf<t>::Rbuf(size_t elements)
 {
@@ -51,7 +63,14 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     size_t remainder;
     size_t numPages;
     size_t alloc_size;
+    
+    /* If sizeof(t) is not a power of 2, bail now, otherwise
+     * this ring buffer will not fit an integral number of elements */
+    if (!isPowerOf2(sizeof(t))) {
+            throw std::invalid_argument("Gmb::Rbuf<t>::Rbuf(n) - Size of type not a power of 2");
+    }
     addr = NULL; 
+
 #ifdef __linux__
     pageSize = sysconf(_SC_PAGESIZE);
 #endif
@@ -62,9 +81,6 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     numPages = numBytes / pageSize;
     remainder = numBytes % pageSize;
     alloc_size = ((numPages + ((remainder) ? 1 : 0)) * pageSize);
-#ifdef DEBUG
-    std::cout << "alloc_size is " << alloc_size << std::endl;
-#endif
     
 #ifdef __linux__
     std::string shm_name = random_string(64);
@@ -213,13 +229,15 @@ Gmb::Rbuf<t>::Rbuf(size_t elements)
     _size = alloc_size;
     _head = addr;
     _tail = addr;
-    arr = (double *)addr;   /* For [] operator */
+    _n = _size / sizeof(t);
+    arr = (t *)addr;   /* For [] operator */
+    _fillcount = 0;
 }
 
 template <typename t>
 void Gmb::Rbuf<t>::consume(size_t elements)
 {
-    if (elements * sizeof(t) > _size - _fillcount) {
+    if (elements * sizeof(t) > _fillcount) {
         throw std::invalid_argument("Gmb::Rbuf::consume() - elements > fillcount");
     }
     size_t bytesConsumed = elements * sizeof(t);
@@ -273,11 +291,9 @@ template <typename t>
 t& Gmb::Rbuf<t>::operator[](int i)
 {
     if (i >= 0) {
-        return arr[i % _size];
+        return arr[i % _n];
     } else {
-        return arr[(i % _size) + _size];
+        return arr[(i % _n) + _n];
     }
 }
-
-
 
